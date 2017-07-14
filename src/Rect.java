@@ -26,9 +26,9 @@ public class Rect {
 	{
 		return isSeleted;
 	}
-	public void Select()
+	public void Select(boolean flag)
 	{
-		isSeleted=!isSeleted;
+		isSeleted=flag;
 	}
 	public int getWidth()
 	{
@@ -62,8 +62,46 @@ public class Rect {
 	{
 		this.abY2=y;
 	}
+	public int getX2()
+	{
+		return this.abX2;
+	}
+	public int getY2()
+	{
+		return this.abY2;
+	}
 	public void setName(String name)
 	{
 		this.name=name;
+	}
+	public String getName()
+	{
+		return this.name;
+	}
+	public void Move(int l_w,int l_h)
+	{
+		this.abX1+=l_w;
+		this.abX2+=l_w;
+		this.abY1+=l_h;
+		this.abY2+=l_h;
+	}
+	public void resize(int scale,String status)
+	{
+		if(status.equalsIgnoreCase("UP"))
+		{
+			this.abY1+=scale;
+		}
+		if(status.equalsIgnoreCase("DOWN"))
+		{
+			this.abY2+=scale;
+		}
+		if(status.equalsIgnoreCase("LEFT"))
+		{
+			this.abX1+=scale;
+		}
+		if(status.equalsIgnoreCase("RIGHT"))
+		{
+			this.abX2+=scale;
+		}
 	}
 }

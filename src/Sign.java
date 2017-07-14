@@ -1,8 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+
 import javax.swing.*;
 
-public class Sign implements MouseListener{
+public class Sign implements MouseListener,KeyListener{
 	JFrame frame=new JFrame("Sign");
 	JPanel p1=new JPanel(); //功能按钮
 	JPanel p2=new JPanel(); //两种模式
@@ -13,10 +15,11 @@ public class Sign implements MouseListener{
 	JButton jb3=new JButton("粘贴"); //同等于ctrl+v
 	JButton jb4=new JButton("输出"); //输出到某文件
 	JButton jb5=new JButton("改名");
-	//
+
 	JRadioButton radiobutton1=new JRadioButton("标注模式",true); //初始为标注模式
 	JRadioButton radiobutton2=new JRadioButton("编辑模式",false);
 	ButtonGroup bgroup=new ButtonGroup();
+	
 	//
 	JFileChooser chooser = new JFileChooser();
 	//JLabel pic=new JLabel();
@@ -48,6 +51,8 @@ public class Sign implements MouseListener{
 		frame.getContentPane().add(p3);
 		p3.setPreferredSize(new Dimension((int)(frame.getWidth()*0.9),(int)(frame.getHeight()*0.8)));
 		//p3为展示图片的
+		
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//设置界面关闭事件
 				
 		frame.setVisible(true);
 
@@ -64,27 +69,68 @@ public class Sign implements MouseListener{
 		//输出
 		jb5.addMouseListener(this);
 		//改名
-		//pic.addMouseListener(this);//图片板子~
+		frame.addKeyListener(this);
+		
+		
+		radiobutton1.addMouseListener(this);
+		radiobutton2.addMouseListener(this);
+	
+		
 	}
 	public void mouseClicked(MouseEvent e)
 	{
-		if(e.getComponent()==jb1)
+		if(e.getComponent()==jb1) //打开
 		{
 			int result=chooser.showOpenDialog(null);
 			if(result == JFileChooser.APPROVE_OPTION)
 			{
 				String fileName = chooser.getSelectedFile().getPath();
 				//ImageIcon image=new ImageIcon(fileName);
-				p3.changePic(fileName);
+				try {
+					p3.changePic(fileName);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				//image.setImage(image.getImage().getScaledInstance((int)(frame.getWidth()*0.75), (int)(frame.getHeight()*0.75),Image.SCALE_DEFAULT));
 				//pic.setIcon(image);
+			}
+		}
+		if(e.getComponent()==jb2) //复制
+		{
+			p3.Copy();
+		}
+		if(e.getComponent()==jb3) //粘贴
+		{
+			p3.Paste();
+		}
+		if(e.getComponent()==jb4) //输出
+		{
+			try {
+				p3.Output();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		if(e.getComponent()==jb5)
+		{
+			p3.Rename(); //改名儿
+		}
+		if(e.getComponent()==radiobutton1 || e.getComponent()==radiobutton2)
+		{
+			if(radiobutton1.isSelected()){ //标注mode
+				p3.setMode(true);
+			}
+			else{
+				p3.setMode(false);
 			}
 		}
 	}
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public void mouseReleased(MouseEvent e) {
@@ -101,6 +147,35 @@ public class Sign implements MouseListener{
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		   if(e.isControlDown()) //ctrl+c
+		   {
+			   System.out.println("kkk");
+			   if(e.getKeyCode()==KeyEvent.VK_C)
+			   {
+				   p3.Copy();
+				   System.out.println("kkk");
+			   }
+		   }
+		   if(e.isControlDown()&&e.getKeyCode()==KeyEvent.VK_V) //ctrl+v
+		   {
+			   p3.Paste();
+		   }
+	}
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+
 	}
 	
 	public static void main(String[] args)
