@@ -122,24 +122,32 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	}
 	public void Output() throws IOException
 	{
-		String path=fileName.split("\\.")[0]+".txt";
-		int index=fileName.lastIndexOf("\\");
-		String folder=fileName.substring(0,index);
-		String name=fileName.substring(index+1,fileName.length());
-		BufferedWriter bw = new BufferedWriter(new FileWriter(path));
-		bw.append("Folder:"+folder+"\r\n");
-		bw.append("Filename:"+name+"\r\n");
-		BufferedImage bufferedImage = ImageIO.read(new File(fileName));   
-		int width = bufferedImage.getWidth();   
-		int height = bufferedImage.getHeight();  
-		bw.append("Image:"+width+"\tx\t"+height+"\r\n");
-		bw.append("Name\t"+"xmin\t"+"ymin\t"+"xmax\t"+"ymax"+"\r\n");
-		for(int i=0;i<num_pic;i++)
+		if(pic!=null)
 		{
-			bw.append(rectList[i].getName()+"\t"+(int)(rectList[i].getX1()*p1)+"\t"+(int)(rectList[i].getY1()*p2)+"\t"+(int)(rectList[i].getX2()*p1)+"\t"+(int)(rectList[i].getY2()*p2)+"\r\n");
-			//bw.append(rectList[i].getName()+"\t"+rectList[i].getX1()+"\t"+rectList[i].getY1()+"\t"+rectList[i].getX2()+"\t"+rectList[i].getY2()+"\r\n");
+			String path=fileName.split("\\.")[0]+".txt";
+			int index=fileName.lastIndexOf("\\");
+			String folder=fileName.substring(0,index);
+			String name=fileName.substring(index+1,fileName.length());
+			BufferedWriter bw = new BufferedWriter(new FileWriter(path));
+			bw.append("Folder:"+folder+"\r\n");
+			bw.append("Filename:"+name+"\r\n");
+			BufferedImage bufferedImage = ImageIO.read(new File(fileName));   
+			int width = bufferedImage.getWidth();   
+			int height = bufferedImage.getHeight();  
+			bw.append("Image:"+width+"\tx\t"+height+"\r\n");
+			bw.append("Name\t"+"xmin\t"+"ymin\t"+"xmax\t"+"ymax"+"\r\n");
+			for(int i=0;i<num_pic;i++)
+			{
+				bw.append(rectList[i].getName()+"\t"+(int)(rectList[i].getX1()*p1)+"\t"+(int)(rectList[i].getY1()*p2)+"\t"+(int)(rectList[i].getX2()*p1)+"\t"+(int)(rectList[i].getY2()*p2)+"\r\n");
+				//bw.append(rectList[i].getName()+"\t"+rectList[i].getX1()+"\t"+rectList[i].getY1()+"\t"+rectList[i].getX2()+"\t"+rectList[i].getY2()+"\r\n");
+			}
+			bw.close();
 		}
-		bw.close();
+		else
+		{
+			JOptionPane.showMessageDialog(this, "请先在打开要标注的图片", "提示", JOptionPane.ERROR_MESSAGE);
+		}
+
 	}
 	private int getSelected()//返回他的index
 	{
@@ -164,41 +172,56 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	}
 	public void Rename() //改名字
 	{
-		if(!isSign)//编辑模式下
+		if(pic!=null)
 		{
-			int index=getSelected();
-			if(index!=-1) //当前有标注框被选中
+			if(!isSign)//编辑模式下
 			{
-				String new_name=(String)JOptionPane.showInputDialog(this,"Name:","请输入标注框的新名字");
-				rectList[index].setName(new_name);
+				int index=getSelected();
+				if(index!=-1) //当前有标注框被选中
+				{
+					String new_name=(String)JOptionPane.showInputDialog(this,"Name:","请输入标注框的新名字");
+					rectList[index].setName(new_name);
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(this, "请先选中一个标注框", "提示", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(this, "请先选中一个标注框", "提示", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "请先在编辑模式下更改标注框名字", "提示", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else
 		{
-			JOptionPane.showMessageDialog(this, "请先在编辑模式下更改标注框名字", "提示", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "请先打开一张图片", "提示", JOptionPane.ERROR_MESSAGE);
 		}
+
 	}
 	public void Copy()//按下复制这个按钮/ctrl+c的时候
 	{
-		if(!isSign)
+		if(pic!=null)
 		{
-			int index=getSelected();
-			if(index!=-1)
+			if(!isSign)
 			{
-				copy_index=index;
+				int index=getSelected();
+				if(index!=-1)
+				{
+					copy_index=index;
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(this, "请先选中一个标注框", "提示", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(this, "请先选中一个标注框", "提示", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "请先在编辑模式下复制标注框", "提示", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else
 		{
-			JOptionPane.showMessageDialog(this, "请先在编辑模式下复制标注框", "提示", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "请先打开一张图片", "提示", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	
