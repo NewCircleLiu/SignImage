@@ -1,13 +1,14 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageConsumer;
+import java.awt.image.ImageProducer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.imageio.plugins.bmp.BMPImageWriteParam;
 import javax.swing.*;
 public class PicPanel extends JPanel implements MouseListener,MouseMotionListener{
 	private Image pic;
@@ -302,7 +303,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 		if(pic!=null || isBmp)
 		{
 			super.paintComponent(g);
-			if(isBmp)
+	/*		if(isBmp)
 			{
 				for (int i = 0; i < bmp_data.length; i++) 
 				{
@@ -313,12 +314,12 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 						g.fillRect(j, i, 1, 1);
 					}
 				}
-			}
-			else
-			{
+			}*/
+		//	else
+		//	{
 				g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
 				//g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
-			}
+		//	}
 			g.setColor(Color.BLACK);
 			for (int i=0;i<num_pic;i++) 
 			{
@@ -343,13 +344,15 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 		if(fileName.split("\\.")[1].equalsIgnoreCase("bmp"))
 		{
 			
-			bmp_data=new int[pic_height][pic_width];
-			bmp_data=BmpReader.ReadBMPPic(fileName);
+//			bmp_data=new int[pic_height][pic_width];
+//			bmp_data=BmpReader.ReadBMPPic(fileName);
+			pic=new ImageIcon(Toolkit.getDefaultToolkit().createImage(bufferedImage.getSource())).getImage();
 			isBmp=true;
 		}
 		else
 		{
 			isBmp=false;
+			//pic=ImageIO.read(getRegisteredKeyStrokes())
 			pic=new ImageIcon(fileName).getImage(); 
 			
 		}

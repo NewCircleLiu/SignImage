@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.MemoryImageSource;
 
 public class BmpReader {
 
@@ -72,17 +75,6 @@ public class BmpReader {
 		int t4 = b[0] & 0xff;
 		int num = t1 << 24 | t2 << 16 | t3 << 8 | t4;
 		return num;
-    }
-    public static void show(String path) throws IOException {
-        // TODO Auto-generated method stub
-        ReadBMPPic(path);
-    /*    for (int i = 0; i < date.length; i++) {
-			for (int j = 0; j < date[i].length; j++) {
-				Color c = new Color(date[i][j]);
-				g.setColor(c);
-				g.drawLine(j, date.length - i, j, date.length - i);
-			}
-		}*/
     }
 
 }
