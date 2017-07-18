@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import javax.swing.*;
 
-public class Sign implements MouseListener,KeyListener{
+public class Sign implements MouseListener{
 	JFrame frame=new JFrame("Sign");
 	JPanel p1=new JPanel(); //功能按钮
 	JPanel p2=new JPanel(); //两种模式
@@ -15,6 +15,7 @@ public class Sign implements MouseListener,KeyListener{
 	JButton jb3=new JButton("粘贴"); //同等于ctrl+v
 	JButton jb4=new JButton("输出"); //输出到某文件
 	JButton jb5=new JButton("改名");
+	JButton jb6=new JButton("删除");
 
 	JRadioButton radiobutton1=new JRadioButton("标注模式",true); //初始为标注模式
 	JRadioButton radiobutton2=new JRadioButton("编辑模式",false);
@@ -34,7 +35,7 @@ public class Sign implements MouseListener,KeyListener{
 		p2.setLayout(new FlowLayout(FlowLayout.CENTER));
 		
 		p1.add(tool);
-		p1.add(jb1);p1.add(jb2);p1.add(jb3);p1.add(jb4);p1.add(jb5);
+		p1.add(jb1);p1.add(jb2);p1.add(jb3);p1.add(jb4);p1.add(jb5);p1.add(jb6);
 		
 		p2.add(mode);
 		p2.add(radiobutton1);p2.add(radiobutton2);
@@ -55,10 +56,13 @@ public class Sign implements MouseListener,KeyListener{
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//设置界面关闭事件
 				
 		frame.setVisible(true);
+		
 
 	}
 	public void start()
 	{
+		
+		
 		jb1.addMouseListener(this);
 		//打开
 		jb2.addMouseListener(this);
@@ -69,12 +73,57 @@ public class Sign implements MouseListener,KeyListener{
 		//输出
 		jb5.addMouseListener(this);
 		//改名
-		frame.addKeyListener(this);
-		
-		
+		jb6.addMouseListener(this);
+		//删除
+		//frame.setFocusable(true);
+
 		radiobutton1.addMouseListener(this);
 		radiobutton2.addMouseListener(this);
-	
+		jb1.addKeyListener(new KeyAdapter()
+		{
+			public void keyPressed(KeyEvent e){
+				if(e.isControlDown() && e.getKeyCode()==KeyEvent.VK_C)
+				{
+					p3.Copy();
+					//System.out.println("sss");
+				}
+				if(e.isControlDown() && e.getKeyCode()==KeyEvent.VK_V)
+				{
+					p3.Paste();
+				}
+			}
+		}
+		);
+		radiobutton1.addKeyListener(new KeyAdapter()
+		{
+			public void keyPressed(KeyEvent e){
+				if(e.isControlDown() && e.getKeyCode()==KeyEvent.VK_C)
+				{
+					p3.Copy();
+					//System.out.println("sss");
+				}
+				if(e.isControlDown() && e.getKeyCode()==KeyEvent.VK_V)
+				{
+					p3.Paste();
+				}
+			}
+		}
+		);
+		radiobutton2.addKeyListener(new KeyAdapter()
+		{
+			public void keyPressed(KeyEvent e){
+				if(e.isControlDown() && e.getKeyCode()==KeyEvent.VK_C)
+				{
+					p3.Copy();
+					//System.out.println("sss");
+				}
+				if(e.isControlDown() && e.getKeyCode()==KeyEvent.VK_V)
+				{
+					p3.Paste();
+				}
+			}
+		}
+		);
 		
 	}
 	public void mouseClicked(MouseEvent e)
@@ -117,6 +166,10 @@ public class Sign implements MouseListener,KeyListener{
 		{
 			p3.Rename(); //改名儿
 		}
+		if(e.getComponent()==jb6)
+		{
+			p3.Remove();
+		}
 		if(e.getComponent()==radiobutton1 || e.getComponent()==radiobutton2)
 		{
 			if(radiobutton1.isSelected()){ //标注mode
@@ -150,33 +203,6 @@ public class Sign implements MouseListener,KeyListener{
 	}
 
 	
-	@Override
-	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void keyPressed(KeyEvent e) {
-		// TODO Auto-generated method stub
-		   if(e.isControlDown()) //ctrl+c
-		   {
-			   System.out.println("kkk");
-			   if(e.getKeyCode()==KeyEvent.VK_C)
-			   {
-				   p3.Copy();
-				   System.out.println("kkk");
-			   }
-		   }
-		   if(e.isControlDown()&&e.getKeyCode()==KeyEvent.VK_V) //ctrl+v
-		   {
-			   p3.Paste();
-		   }
-	}
-	@Override
-	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-
-	}
 	
 	public static void main(String[] args)
 	{

@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.imageio.plugins.bmp.BMPImageWriteParam;
 import javax.swing.*;
 public class PicPanel extends JPanel implements MouseListener,MouseMotionListener{
 	private Image pic;
@@ -22,12 +23,20 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	int copy_index; //当前要复制粘贴的rect的标号
 	double p1;
 	double p2;
+	int [][] bmp_data;
+	boolean isBmp;
+	double scale=1.0;
+	int pic_width;
+	int pic_height;
 	
 	public PicPanel()
 	{
 		this.num_pic=0;
 		this.isSign=true;
 		status=null;
+		isBmp=false;
+		
+		
 		now=-1; //没选中任何标注框
 		this.x1=0;
 		this.y1=0;
@@ -37,6 +46,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		copy_index=-1;
+
 	}
 	private void checkRect(int x,int y) //查看当前鼠标的位置有无标注框，若有，在标注框的什么位置
 	{
@@ -122,7 +132,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	}
 	public void Output() throws IOException
 	{
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			String path=fileName.split("\\.")[0]+".txt";
 			int index=fileName.lastIndexOf("\\");
@@ -172,7 +182,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	}
 	public void Rename() //改名字
 	{
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(!isSign)//编辑模式下
 			{
@@ -198,9 +208,41 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 		}
 
 	}
+	public void Remove() //删除选中的框框
+	{
+		if(pic!=null ||isBmp)
+		{
+			if(!isSign)
+			{
+				int index=getSelected();
+				if(index!=-1)
+				{
+					int i;
+					for(i=index;i<num_pic-1;i++)
+					{
+						rectList[i]=rectList[i+1];
+					}
+					num_pic--;
+					repaint();
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(this, "请选中要删除的图片", "提示", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(this, "请在编辑模式下操作", "提示", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		else
+		{
+			JOptionPane.showMessageDialog(this, "请先打开一张图片", "提示", JOptionPane.ERROR_MESSAGE);
+		}
+	}
 	public void Copy()//按下复制这个按钮/ctrl+c的时候
 	{
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(!isSign)
 			{
@@ -227,7 +269,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	
 	public void Paste()//按下粘贴这个按钮/ctrl+v的时候
 	{
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(!isSign)
 			{
@@ -257,10 +299,26 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	}
 	public void paint(Graphics g)
 	{
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			super.paintComponent(g);
-			g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
+			if(isBmp)
+			{
+				for (int i = 0; i < bmp_data.length; i++) 
+				{
+					for (int j = 0; j < bmp_data[i].length; j++) 
+					{
+						Color c = new Color(bmp_data[i][j]);
+						g.setColor(c);
+						g.fillRect(j, i, 1, 1);
+					}
+				}
+			}
+			else
+			{
+				g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
+				//g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
+			}
 			g.setColor(Color.BLACK);
 			for (int i=0;i<num_pic;i++) 
 			{
@@ -279,21 +337,33 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	public void changePic(String fileName) throws IOException
 	{
 		num_pic=0; //重新标注
-		pic=new ImageIcon(fileName).getImage();
 		BufferedImage bufferedImage = ImageIO.read(new File(fileName));   
-		int width = bufferedImage.getWidth();   
-		int height = bufferedImage.getHeight();   
-		p1=(double)width/(double)this.getWidth();
-		p2=(double)height/(double)this.getWidth();
+		pic_width = bufferedImage.getWidth();   
+		pic_height = bufferedImage.getHeight();
+		if(fileName.split("\\.")[1].equalsIgnoreCase("bmp"))
+		{
+			
+			bmp_data=new int[pic_height][pic_width];
+			bmp_data=BmpReader.ReadBMPPic(fileName);
+			isBmp=true;
+		}
+		else
+		{
+			isBmp=false;
+			pic=new ImageIcon(fileName).getImage(); 
+			
+		}
+		p1=(double)pic_width/(double)this.getWidth();
+		p2=(double)pic_height/(double)this.getWidth();
 		this.fileName=fileName;
-		System.out.println("p1:"+p1+"p2"+p2);
+		//System.out.println("p1:"+p1+"p2"+p2);
 		//System.out.println(fileName.substring(fileName.lastIndexOf("\\"),fileName.length()-1));
 		repaint();
 	}
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(!isSign) //如果是编辑模式的话
 			{
@@ -315,7 +385,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(isSign) //标注模式
 			{
@@ -337,7 +407,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(isSign)
 			{
@@ -366,7 +436,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		// TODO Auto-generated method stub
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			if(isSign)
 			{
@@ -386,6 +456,8 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 				{
 			        x2 = e.getX();
 			        y2 = e.getY();
+			        unSelect();
+			        rectList[now].Select(true);
 					if(status.equalsIgnoreCase("INNER"))
 					{
 				        int l_w=x2-(rectList[now].getX2()+rectList[now].getX1())/2; //在x轴上移动了多少
@@ -422,7 +494,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
-		if(pic!=null)
+		if(pic!=null || isBmp)
 		{
 			x1=e.getX();
 			y1=e.getY();
@@ -435,7 +507,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 				checkRect(x1, y1);
 				if(now==-1)//附近没有标注框
 				{
-					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					setCursor(new Cursor(Cursor.HAND_CURSOR));
 				}
 				else //返回了某个标注框
 				{
@@ -463,7 +535,29 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 			}
 		}
 	}
-	
+//	@Override
+/*	public void mouseWheelMoved(MouseWheelEvent e) {
+		// TODO Auto-generated method stub
+		if(pic!=null)
+		{
+			int num = e.getWheelRotation();
+			scale=2;
+			BufferedImage image=null;
+			BufferedImage newImage=null;
+			try {
+				image = ImageIO.read(new File(this.fileName));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			pic=ImageResize.zoomOutImage(image, new Integer(2));
+			pic_width=(int)(pic_width*scale);
+			pic_height=(int)(pic_height*scale);
+			//pic=pic.getScaledInstance((int)(pic_width*scale), (int)(pic_height*scale), Image.SCALE_REPLICATE);
+			repaint();
+		}
+	}
+*/	
 	
 
 /*	public static void main(String args[])
