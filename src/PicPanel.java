@@ -1,15 +1,25 @@
 import java.awt.*;
+import java.awt.Image;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageConsumer;
-import java.awt.image.ImageProducer;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.awt.image.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import java.io.*;
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+
+import org.w3c.dom.*;
+
+import jxl.*;
+import jxl.write.*;
+import jxl.write.Label;
+import jxl.write.biff.RowsExceededException;
+
 public class PicPanel extends JPanel implements MouseListener,MouseMotionListener{
 	private Image pic;
 	//ArrayList<Rect> rectList=new ArrayList<Rect>();
@@ -135,24 +145,134 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 	{
 		if(pic!=null || isBmp)
 		{
-			String path=fileName.split("\\.")[0]+".txt";
+			Object [] options={"txt","xls","xml"};
 			int index=fileName.lastIndexOf("\\");
 			String folder=fileName.substring(0,index);
 			String name=fileName.substring(index+1,fileName.length());
-			BufferedWriter bw = new BufferedWriter(new FileWriter(path));
-			bw.append("Folder:"+folder+"\r\n");
-			bw.append("Filename:"+name+"\r\n");
 			BufferedImage bufferedImage = ImageIO.read(new File(fileName));   
 			int width = bufferedImage.getWidth();   
 			int height = bufferedImage.getHeight();  
-			bw.append("Image:"+width+"\tx\t"+height+"\r\n");
-			bw.append("Name\t"+"xmin\t"+"ymin\t"+"xmax\t"+"ymax"+"\r\n");
-			for(int i=0;i<num_pic;i++)
+			String option=(String)JOptionPane.showInputDialog(null,"请选择要输出的文件类型","输出",JOptionPane.INFORMATION_MESSAGE,null,options,options[0]);
+			if(option.equalsIgnoreCase("txt"))
 			{
-				bw.append(rectList[i].getName()+"\t"+(int)(rectList[i].getX1()*p1)+"\t"+(int)(rectList[i].getY1()*p2)+"\t"+(int)(rectList[i].getX2()*p1)+"\t"+(int)(rectList[i].getY2()*p2)+"\r\n");
-				//bw.append(rectList[i].getName()+"\t"+rectList[i].getX1()+"\t"+rectList[i].getY1()+"\t"+rectList[i].getX2()+"\t"+rectList[i].getY2()+"\r\n");
+				String path=fileName.split("\\.")[0]+".txt";
+				BufferedWriter bw = new BufferedWriter(new FileWriter(path));
+				bw.append("Folder:"+folder+"\r\n");
+				bw.append("Filename:"+name+"\r\n");
+				bw.append("Image:"+width+"\tx\t"+height+"\r\n");
+				bw.append("Name\t"+"xmin\t"+"ymin\t"+"xmax\t"+"ymax"+"\r\n");
+				for(int i=0;i<num_pic;i++)
+				{
+					bw.append(rectList[i].getName()+"\t"+(int)(rectList[i].getX1()*p1)+"\t"+(int)(rectList[i].getY1()*p2)+"\t"+(int)(rectList[i].getX2()*p1)+"\t"+(int)(rectList[i].getY2()*p2)+"\r\n");
+					//bw.append(rectList[i].getName()+"\t"+rectList[i].getX1()+"\t"+rectList[i].getY1()+"\t"+rectList[i].getX2()+"\t"+rectList[i].getY2()+"\r\n");
+				}
+				bw.close();
 			}
-			bw.close();
+			if(option.equalsIgnoreCase("xml"))
+			{
+				try {
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		            DocumentBuilder builder;
+					builder = factory.newDocumentBuilder();
+		            Document document = builder.newDocument();
+		            document.setXmlVersion("1.0");
+		            document.setXmlStandalone(true);
+		            Element root = document.createElement("annotation");//root
+		            document.appendChild(root);  //添加根节点
+		            Element fold = document.createElement("folder"); 
+		            fold.appendChild(document.createTextNode(fileName.substring(0,index))); 
+		            root.appendChild(fold);
+		            Element NAME=document.createElement("filename"); 
+		            NAME.appendChild(document.createTextNode(name));
+		            root.appendChild(NAME);
+		            Element size=document.createElement("size");
+		            root.appendChild(size);
+		            Element WIDTH=document.createElement("width");
+		            WIDTH.appendChild(document.createTextNode(Integer.toString(width)));
+		            Element HEIGHT=document.createElement("height");
+		            HEIGHT.appendChild(document.createTextNode(Integer.toString(height)));
+		            Element DEPTH=document.createElement("depth");
+		            DEPTH.appendChild(document.createTextNode(Integer.toString(3)));
+		            size.appendChild(WIDTH);size.appendChild(HEIGHT);size.appendChild(DEPTH);
+		            for(int i=0;i<num_pic;i++)
+		            {
+		            	Element obj=document.createElement("object");
+		            	Element obj_name=document.createElement("name");
+		            	obj_name.appendChild(document.createTextNode(rectList[i].getName()));
+		            	obj.appendChild(obj_name);
+		            	Element bndbox=document.createElement("bndbox");
+		            	Element xmin=document.createElement("xmin");
+		            	xmin.appendChild(document.createTextNode(Integer.toString((int)(rectList[i].getX1()*p1))));
+		            	bndbox.appendChild(xmin);
+		            	Element ymin=document.createElement("ymin");
+		            	ymin.appendChild(document.createTextNode(Integer.toString((int)(rectList[i].getY1()*p2))));
+		            	bndbox.appendChild(ymin);
+		            	Element xmax=document.createElement("xmax");
+		            	xmax.appendChild(document.createTextNode(Integer.toString((int)(rectList[i].getX2()*p1))));
+		            	bndbox.appendChild(xmax);
+		            	Element ymax=document.createElement("ymax");
+		            	ymax.appendChild(document.createTextNode(Integer.toString((int)(rectList[i].getY2()*p2))));
+		            	bndbox.appendChild(ymax);
+		            	obj.appendChild(bndbox);
+		            	root.appendChild(obj);
+		            }
+		            TransformerFactory tf = TransformerFactory.newInstance();
+		            Transformer transformer = tf.newTransformer();
+		            DOMSource source = new DOMSource(document);
+		            transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
+		            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		            PrintWriter pw = new PrintWriter(new FileOutputStream(fileName.split("\\.")[0]+".xml"));
+		            StreamResult result = new StreamResult(pw);
+		            transformer.transform(source, result);
+		            
+				} catch (ParserConfigurationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TransformerConfigurationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TransformerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			if(option.equalsIgnoreCase("xls"))
+			{
+
+		        try {
+					WritableWorkbook book=Workbook.createWorkbook(new FileOutputStream(fileName.split("\\.")[0]+".xls"));
+					WritableSheet sheet=book.createSheet("sheet",0);
+			        Label FOLDER = new Label(0,0,"Folder:"+folder);
+					sheet.addCell(FOLDER);
+			        Label FILE = new Label(0,1,"File:"+name);
+			        sheet.addCell(FILE);
+			        Label SIZE = new Label(0,2,"size:"+width+"  x  "+height);
+			        sheet.addCell(SIZE);
+			        Label t1 = new Label(0,3,"name");
+			        Label t2 = new Label(1,3,"xmin");
+			        Label t3 = new Label(2,3,"ymin");
+			        Label t4 = new Label(3,3,"xmax");
+			        Label t5 = new Label(4,3,"ymax");
+			        sheet.addCell(t1);sheet.addCell(t2);sheet.addCell(t3);
+			        sheet.addCell(t4);sheet.addCell(t5);
+			        for(int i=0;i<num_pic;i++)
+			        {
+			        	sheet.addCell(new Label(0,4+i,rectList[i].getName()));
+			        	sheet.addCell(new Label(1,4+i,Integer.toString((int)(rectList[i].getX1()*p1))));
+			        	sheet.addCell(new Label(2,4+i,Integer.toString((int)(rectList[i].getY1()*p2))));
+			        	sheet.addCell(new Label(3,4+i,Integer.toString((int)(rectList[i].getX2()*p1))));
+			        	sheet.addCell(new Label(4,4+i,Integer.toString((int)(rectList[i].getY2()*p2))));
+			        }
+		            book.write();
+		            book.close();
+				} catch (RowsExceededException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (WriteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		else
 		{
@@ -303,23 +423,7 @@ public class PicPanel extends JPanel implements MouseListener,MouseMotionListene
 		if(pic!=null || isBmp)
 		{
 			super.paintComponent(g);
-	/*		if(isBmp)
-			{
-				for (int i = 0; i < bmp_data.length; i++) 
-				{
-					for (int j = 0; j < bmp_data[i].length; j++) 
-					{
-						Color c = new Color(bmp_data[i][j]);
-						g.setColor(c);
-						g.fillRect(j, i, 1, 1);
-					}
-				}
-			}*/
-		//	else
-		//	{
-				g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
-				//g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
-		//	}
+			g.drawImage(pic, 0, 0, this.getWidth(), this.getHeight(), this);
 			g.setColor(Color.BLACK);
 			for (int i=0;i<num_pic;i++) 
 			{
